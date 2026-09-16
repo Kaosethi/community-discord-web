@@ -12,7 +12,7 @@ import { setSession } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   const form = await req.formData()
-  const username = (form.get('username') as string | null)?.trim() ?? ''
+  const username = ((form.get('username') as string | null) ?? '').trim().toLowerCase()
   const password = (form.get('password') as string | null) ?? ''
 
   if (!username || !password) {

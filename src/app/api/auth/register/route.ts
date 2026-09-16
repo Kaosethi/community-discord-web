@@ -5,10 +5,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { supabase } from '@/lib/supabase'
 import { setSession } from '@/lib/session'
+import { env } from '@/lib/env'
 
 export async function POST(req: NextRequest) {
   const form = await req.formData()
-  const username = (form.get('username') as string | null)?.trim() ?? ''
+  // Fail fast if session isn't configured — avoids orphaned mock_game_account rows.
+  try { env.session.secret } catch {
+    console.error('[auth/register] session secret not configured')
+    return redirectWith(req, '/register', 'unknown')
+  }
+  const username = ((form.get('username') as string | null) ?? '').trim().toLowerCase()
   const password = (form.get('password') as string | null) ?? ''
   const confirm = (form.get('confirm') as string | null) ?? ''
 
