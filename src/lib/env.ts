@@ -19,6 +19,7 @@ export const env = {
     get botToken() { return required('DISCORD_BOT_TOKEN') },
     get guildId() { return required('DISCORD_GUILD_ID') },
     get linkedRoleId() { return required('DISCORD_LINKED_ROLE_ID') },
+    get welcomeChannelId() { return required('DISCORD_WELCOME_CHANNEL_ID') },
   },
   supabase: {
     get url() { return required('SUPABASE_URL') },

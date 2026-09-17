@@ -101,3 +101,38 @@ export async function assignLinkedRole(discordUserId: string): Promise<{ applied
   }
   throw new Error(`role assign failed: ${res.status}`)
 }
+
+/**
+ * Post the "welcome to the community" message in #welcome after a
+ * successful Link. Uses the bot token to author the message.
+ */
+export async function postWelcomeMessage(discordUserId: string): Promise<void> {
+  const content =
+    `👋 Welcome to the community, <@${discordUserId}>! You're all linked up. 🎉\n` +
+    `\n` +
+    `Here's what to do next:\n` +
+    `- Chat here in #welcome to start earning Social Coin\n` +
+    `- Points show up automatically as you engage\n` +
+    `- You'll unlock tier roles (Bronze → Silver → Gold) as your balance grows\n` +
+    `\n` +
+    `Have fun!`
+
+  const res = await fetchWithRetry(
+    `https://discord.com/api/channels/${env.discord.welcomeChannelId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bot ${env.discord.botToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content,
+        allowed_mentions: { users: [discordUserId] },
+      }),
+    },
+    'welcome post'
+  )
+  if (!res.ok) {
+    throw new Error(`welcome post failed: ${res.status}`)
+  }
+}

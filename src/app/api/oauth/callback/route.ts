@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { decodeState } from '@/lib/state'
 import { supabase } from '@/lib/supabase'
-import { exchangeCode, fetchUser, assignLinkedRole } from '@/lib/discord'
+import { exchangeCode, fetchUser, assignLinkedRole, postWelcomeMessage } from '@/lib/discord'
 
 const CONSENT_VERSION = 'v1-2026-09'
 
@@ -203,6 +203,16 @@ export async function GET(req: NextRequest) {
   // Assign the Linked role. If the user isn't in the server yet, this
   // returns queued=true and F02's join handler will apply the role later.
   const roleResult = await tryAssignRole(discordId)
+
+  // Post the welcome message in #welcome — only if role actually applied
+  // (user in server). Non-fatal on failure — user is still linked.
+  if (roleResult.applied) {
+    try {
+      await postWelcomeMessage(discordId)
+    } catch (err) {
+      console.error('[oauth callback] welcome post failed', err)
+    }
+  }
 
   return redirect(req, '/success', {
     player_id: playerId,
